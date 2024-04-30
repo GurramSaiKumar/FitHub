@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            background-color: #f0f0f0; /* Light gray background color for the entire page */
+            margin: 0; /* Remove default margin */
+            padding: 0; /* Remove default padding */
+            font-family: Arial, sans-serif; /* Use Arial font */
+        }
+        .panel {
+            width: 250px;
+            float: left;
+            margin-right: 20px;
+            background-color: #ffffff; /* White background color for the left panel */
+            padding: 20px;
+        }
+        .panel ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .panel li {
+            margin-bottom: 10px;
+        }
+        .panel li a {
+            display: block;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+        }
+        .panel li a:hover {
+            background-color: #0056b3;
+        }
+        .center-content {
+            margin-top: 100px; /* Adjust top margin */
+            text-align: center;
+        }
+        .data-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+        .data-item {
+            flex: 1;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+        .data-item:hover {
+            background-color: #f0f0f0; /* Light gray background color on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <ul>
+            <li><a href="/clients/add">Add Client</a></li>
+            <li><a href="/clients/delete">Delete Client</a></li>
+            <li><a href="/clients/update">Update Client</a></li>
+        </ul>
+    </div>
+    <div class="center-content">
+        <h2>Client Statistics</h2>
+        <div class="data-container">
+            <div class="data-item" id="active-clients"> <!-- Add unique IDs to each statistic -->
+                <h3>Active Clients</h3>
+                <p>100</p> <!-- Dummy data: 100 active clients -->
+            </div>
+            <div class="data-item" id="expiring-clients">
+                <h3>Expiring Soon Clients</h3>
+                <p>50</p> <!-- Dummy data: 50 expiring soon clients -->
+            </div>
+            <div class="data-item" id="overdue-clients">
+                <h3>Overdue Clients</h3>
+                <p>20</p> <!-- Dummy data: 20 overdue clients -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to make AJAX request and update content
+        function fetchDataAndUpdate(id, endpoint) {
+            fetch(endpoint)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById(id).innerHTML = `
+                    <h3>${data.title}</h3>
+                    ${data.clients.map(client => `
+                        <a class="client-link" href="/clients/${client.client_id}">${client.client_name}</a><br>
+                    `).join('')}
+                `;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Add click event listeners to each data-item
+        document.getElementById('active-clients').addEventListener('click', function() {
+            fetchDataAndUpdate('active-clients', '/clients/client');
+        });
+
+        document.getElementById('expiring-clients').addEventListener('click', function() {
+            fetchDataAndUpdate('expiring-clients', '/api/clients/expiring');
+        });
+
+        document.getElementById('overdue-clients').addEventListener('click', function() {
+            fetchDataAndUpdate('overdue-clients', '/api/clients/overdue');
+        });
+    </script>
+</body>
+</html>
