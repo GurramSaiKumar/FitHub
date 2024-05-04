@@ -9,22 +9,37 @@ from django.utils import timezone
 
 class ClientView(APIView):
     def post(self, request):
-        client_data = request.data
-        serializer = serializers.ClientSaveSerializer(client_data)
+        data = {
+            'client_name': request.data.get('client-name'),
+            'client_number': request.data.get('client-number'),
+            'client_address': request.data.get('client-address'),
+            'active_plan': request.data.get('active-plan'),
+            'plan_start_date': request.data.get('plan-start-date'),
+            'plan_end_date': request.data.get('plan-end-date'),
+            'total_amount': int(request.data.get('total-amount')),
+            'amount_paid': int(request.data.get('amount-paid')),
+            'account': 1
+        }
+        serializer = serializers.ClientSaveSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(data={'message': 'Client saved successful'}, status=status.HTTP_201_CREATED)
+            redirect_url = '/accounts/dashboard/'
+            return JsonResponse(data={'message': 'Client saved successful', 'redirect_url': redirect_url},
+                                status=status.HTTP_201_CREATED)
         else:
             return JsonResponse(data={'message': f'Client failed with {serializer.error_messages}'},
                                 status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        try:
-            clients = models.Client.objects.all()
-            serializer = serializers.ClientGetSerializer(clients, many=True)
-            return JsonResponse(data=serializer.data, status=status.HTTP_200_OK)
-        except Exception as e:
-            return JsonResponse(data={'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return render(request, 'add_client.html')
+
+    # def get(self, request):
+    #     try:
+    #         clients = models.Client.objects.all()
+    #         serializer = serializers.ClientGetSerializer(clients, many=True)
+    #         return JsonResponse(data=serializer.data, status=status.HTTP_200_OK)
+    #     except Exception as e:
+    #         return JsonResponse(data={'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def put(self, request):
         try:
