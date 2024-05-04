@@ -1,3 +1,6 @@
+import json
+from django.urls import reverse
+
 from django.shortcuts import render
 
 from rest_framework.views import APIView
@@ -32,14 +35,6 @@ class ClientView(APIView):
 
     def get(self, request):
         return render(request, 'add_client.html')
-
-    # def get(self, request):
-    #     try:
-    #         clients = models.Client.objects.all()
-    #         serializer = serializers.ClientGetSerializer(clients, many=True)
-    #         return JsonResponse(data=serializer.data, status=status.HTTP_200_OK)
-    #     except Exception as e:
-    #         return JsonResponse(data={'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def put(self, request):
         try:
@@ -93,3 +88,35 @@ class ClientAttendanceView(APIView):
                                 status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse(data={str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ClientsListView(APIView):
+    def get(self, request):
+        try:
+            clients = models.Client.objects.all()
+            serializer = serializers.ClientGetSerializer(clients, many=True)
+            return JsonResponse(data=serializer.data, status=status.HTTP_200_OK, safe=False)
+        except Exception as e:
+            return JsonResponse(data={'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class DeleteClientsView(APIView):
+    def get(self, request):
+        return render(request, 'delete_clients.html')
+
+    def delete(self, request):
+        try:
+            client_ids = request.data.get('client_ids', [])
+            if not isinstance(client_ids, list):
+                raise ValueError("Client IDs must be provided as a list")
+
+            clients = models.Client.objects.filter(client_id__in=client_ids)
+            for client in clients:
+                client.is_active = False
+                client.save()
+            dashboard_url = reverse('accounts:dashboard')
+            return JsonResponse({'message': 'Clients deleted successfully', 'redirect_url': dashboard_url},
+                                status=status.HTTP_200_OK)
+        except Exception as e:
+            return JsonResponse({'message': f'Failed to delete clients due to {str(e)}'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)

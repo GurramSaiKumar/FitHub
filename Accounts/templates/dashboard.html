@@ -61,8 +61,8 @@
 <body>
     <div class="panel">
         <ul>
-            <li><a href="{% url 'client' %}">Add Client</a></li>
-            <li><a href="/clients/delete">Delete Client</a></li>
+            <li><a href="{% url 'clients:client' %}">Add Client</a></li>
+            <li><a href="{% url 'clients:delete_clients' %}">Delete Client</a></li>
             <li><a href="/clients/update">Update Client</a></li>
         </ul>
     </div>

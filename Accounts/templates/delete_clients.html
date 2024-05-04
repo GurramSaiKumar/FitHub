@@ -1,0 +1,131 @@
+<!-- delete_clients.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Clients</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0; /* Light gray background color */
+            padding-top: 50px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .client-list {
+            list-style: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        .client-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .client-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        #delete-clients-btn {
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Delete Clients</h1>
+        <ul class="client-list" id="clients-container"></ul>
+        <button id="delete-clients-btn" class="btn btn-danger">Delete Selected Clients</button>
+        <div id="message" class="message"></div> <!-- Add a class to style the message -->
+    </div>
+
+    <style>
+        .message {
+            text-align: center; /* Center the text */
+            margin-top: 20px; /* Add some margin at the top */
+            font-size: 18px; /* Adjust font size */
+        }
+    </style>
+
+    <script>
+        // Fetch client data from the server
+        fetch('{% url 'clients:clients_list' %}')
+            .then(response => response.json())
+            .then(data => {
+                // Generate HTML to display clients and checkboxes
+                const clientsContainer = document.getElementById('clients-container');
+                data.forEach(client => {
+                    clientsContainer.innerHTML += `
+                        <div class="client-item">
+                            <input type="checkbox" name="selected-clients" value="${client.client_id}">
+                            <span>${client.client_name} - ${client.client_number}</span>
+                        </div>
+                    `;
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching client data:', error);
+            });
+
+        // Handle deletion of selected clients
+        document.getElementById('delete-clients-btn').addEventListener('click', function() {
+            const selectedClients = Array.from(document.querySelectorAll('input[name="selected-clients"]:checked'))
+                .map(checkbox => parseInt(checkbox.value));
+
+            if (selectedClients.length > 0) {
+                // Send a DELETE request to delete selected clients
+                fetch('{% url 'clients:delete_clients' %}', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ client_ids: selectedClients })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Failed to delete clients.');
+                    }
+                })
+                .then(data => {
+                    const messageDiv = document.getElementById('message'); // Get the message div element
+                    messageDiv.innerHTML = `${data.message}<br>Redirecting to dashboard in 5 seconds...`; // Add line break
+                    messageDiv.style.color = 'green'; // Style the message color
+                    // Redirect to the dashboard after 5 seconds
+                    setTimeout(function () {
+                        window.location.href = data.redirect_url;
+                    }, 5000);
+                })
+                .catch(error => {
+                    const messageDiv = document.getElementById('message'); // Get the message div element
+                    messageDiv.textContent = 'Failed to delete clients';
+                    messageDiv.style.color = 'red'; // Style the message as error
+                });
+            } else {
+                const messageDiv = document.getElementById('message'); // Get the message div element
+                messageDiv.textContent = 'Please select at least one client to delete.';
+                messageDiv.style.color = 'red'; // Style the message as error
+            }
+        });
+    </script>
+</body>
+
+</html>
