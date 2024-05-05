@@ -56,6 +56,15 @@
         .data-item:hover {
             background-color: #f0f0f0; /* Light gray background color on hover */
         }
+        .clients-list-container {
+            text-align: center;
+        }
+
+        #clients-list {
+            display: inline-block;
+            text-align: left;
+        }
+
     </style>
 </head>
 <body>
@@ -81,6 +90,14 @@
                 <h3>Overdue Clients</h3>
                 <p>20</p> <!-- Dummy data: 20 overdue clients -->
             </div>
+        </div>
+    </div>
+    <!-- Centered list of clients -->
+    <div class="center-content">
+        <div id="clients-list-container" class="clients-list-container">
+            <ul id="clients-list">
+                <!-- Client items will be dynamically added here -->
+            </ul>
         </div>
     </div>
 
@@ -112,6 +129,28 @@
         document.getElementById('overdue-clients').addEventListener('click', function() {
             fetchDataAndUpdate('overdue-clients', '/api/clients/overdue');
         });
+
+        // Function to fetch and display the list of clients
+        function fetchAndDisplayClientList() {
+            fetch('{% url 'clients:clients_list' %}')
+            .then(response => response.json())
+            .then(data => {
+                const clientListContainer = document.getElementById('clients-list-container');
+                // Clear existing list items
+                clientListContainer.innerHTML = '';
+                // Append new list items
+                data.forEach(client => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `${client.client_name} - ${client.client_number}`;
+                    listItem.value = client.client_id; // Set client_id as the value
+                    clientListContainer.appendChild(listItem);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Call the function when the page loads
+        window.onload = fetchAndDisplayClientList;
     </script>
 </body>
 </html>
