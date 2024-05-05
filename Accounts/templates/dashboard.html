@@ -61,9 +61,30 @@
         }
 
         #clients-list {
-            display: inline-block;
-            text-align: left;
+            display: block;
+            margin: 0 auto;
+            max-width: 400px;
         }
+
+        .client-grid {
+            display: flex;
+            flex-direction: column; /* Display cards vertically */
+            align-items: center; /* Center content horizontally */
+            margin-top: 20px; /* Add margin to separate from the client list */
+        }
+
+
+        .client-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px; /* Add space between client cards */
+            border-bottom: 1px solid #e0e0e0; /* Add a bottom border */
+        }
+
+    }
+
 
     </style>
 </head>
@@ -76,30 +97,39 @@
         </ul>
     </div>
     <div class="center-content">
-        <h2>Client Statistics</h2>
-        <div class="data-container">
-            <div class="data-item" id="active-clients"> <!-- Add unique IDs to each statistic -->
-                <h3>Active Clients</h3>
-                <p>100</p> <!-- Dummy data: 100 active clients -->
-            </div>
-            <div class="data-item" id="expiring-clients">
-                <h3>Expiring Soon Clients</h3>
-                <p>50</p> <!-- Dummy data: 50 expiring soon clients -->
-            </div>
-            <div class="data-item" id="overdue-clients">
-                <h3>Overdue Clients</h3>
-                <p>20</p> <!-- Dummy data: 20 overdue clients -->
-            </div>
+    <h2>Client Statistics</h2>
+    <div class="data-container">
+        <div class="data-item" id="active-clients">
+            <h3>Active Clients</h3>
+            <p>100</p>
+        </div>
+        <div class="data-item" id="expiring-clients">
+            <h3>Expiring Soon Clients</h3>
+            <p>50</p>
+        </div>
+        <div class="data-item" id="overdue-clients">
+            <h3>Overdue Clients</h3>
+            <p>20</p>
         </div>
     </div>
-    <!-- Centered list of clients -->
+</div>
+<!-- Centered list of clients -->
     <div class="center-content">
-        <div id="clients-list-container" class="clients-list-container">
-            <ul id="clients-list">
-                <!-- Client items will be dynamically added here -->
-            </ul>
-        </div>
+    <div id="clients-list-container" class="clients-list-container">
+        <ul id="clients-list">
+            <!-- Client items will be dynamically added here -->
+        </ul>
     </div>
+</div>
+<!-- Client grid -->
+    <div class="center-content">
+    <div class="client-grid">
+        <!-- Client cards will be dynamically added here -->
+    </div>
+</div>
+
+
+
 
     <script>
         // Function to make AJAX request and update content
@@ -135,15 +165,18 @@
             fetch('{% url 'clients:clients_list' %}')
             .then(response => response.json())
             .then(data => {
-                const clientListContainer = document.getElementById('clients-list-container');
-                // Clear existing list items
-                clientListContainer.innerHTML = '';
-                // Append new list items
+                const clientGrid = document.querySelector('.client-grid');
+                // Clear existing client cards
+                clientGrid.innerHTML = '';
+                // Append new client cards
                 data.forEach(client => {
-                    const listItem = document.createElement('li');
-                    listItem.innerHTML = `${client.client_name} - ${client.client_number}`;
-                    listItem.value = client.client_id; // Set client_id as the value
-                    clientListContainer.appendChild(listItem);
+                    const card = document.createElement('div');
+                    card.classList.add('client-card');
+                    card.innerHTML = `
+                        <h3>${client.client_name} - ${client.client_number}</h3>
+                        <!-- Add more client details as needed -->
+                    `;
+                    clientGrid.appendChild(card);
                 });
             })
             .catch(error => console.error('Error:', error));
@@ -151,6 +184,7 @@
 
         // Call the function when the page loads
         window.onload = fetchAndDisplayClientList;
+
     </script>
 </body>
 </html>
