@@ -41,13 +41,25 @@ class ClientView(APIView):
 
     def put(self, request):
         try:
-            data = request.data
-            client = models.Client.objects.get(pk=data['id'])
+            data = {
+                'client_name': request.data.get('client_name'),
+                'client_number': request.data.get('client_number'),
+                'client_address': request.data.get('client_address'),
+                'active_plan': request.data.get('active_plan'),
+                'plan_start_date': request.data.get('plan_start_date'),
+                'plan_end_date': request.data.get('plan_end_date'),
+                'total_amount': int(request.data.get('total_amount')),
+                'amount_paid': int(request.data.get('amount_paid')),
+                'account': 1
+            }
+            client = models.Client.objects.get(pk=request.data.get('client_id'))
             serializer = serializers.ClientSaveSerializer(client, data=data)
             if serializer.is_valid():
                 serializer.save()
-                return JsonResponse(data={'message': f'Client {serializer.data["client_name"]} updated'},
-                                    status=status.HTTP_200_OK)
+                redirect_url = '/accounts/dashboard/'
+                return JsonResponse(
+                    data={'message': f'Client {serializer.data["client_name"]} updated', 'redirect_url': redirect_url},
+                    status=status.HTTP_200_OK)
             return JsonResponse(data={'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except models.Client.DoesNotExist:
             return JsonResponse(data={'message': 'Client not found'}, status=status.HTTP_404_NOT_FOUND)

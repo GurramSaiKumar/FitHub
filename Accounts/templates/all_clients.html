@@ -133,8 +133,10 @@
         </ul>
         <button type="submit">Select Client</button>
     </form>
-    <form id="clients-update-form" method="post" action="/submit-form" style="display: none;">
+    <form id="clients-update-form" method="post" action="{% url 'clients:client' %}" style="display: none;">
         <h1 id="update-heading" style="display: none;">Update Client Details</h1>
+        <!-- Hidden input field to store client_id -->
+        <input type="hidden" id="client-id" name="client_id">
         <!-- Form fields go here -->
         <div class="form-group">
             <label for="client-name">Client Name:</label>
@@ -169,10 +171,51 @@
             <input type="number" name="amount_paid">
         </div>
         <button type="submit">Update Client</button>
+        <div id="message" style="text-align: center; margin-top: 20px;"></div>
     </form>
+
 </div>
 
 <script>
+    document.getElementById('clients-update-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const form = event.target;
+    const clientId = document.getElementById('client-id').value;
+    const formData = new FormData(form);
+    formData.append('id', clientId); // Assuming your API expects 'id' instead of 'client_id'
+    fetch(form.action, {
+        method: 'PUT',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Failed to update client');
+        }
+    })
+    .then(data => {
+        // Display the message on the page
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = `${data.message} Redirecting to dashboard in 5 seconds...`;
+        messageDiv.style.color = 'green'; // Style the message as successful
+        form.reset(); // Reset the form fields
+
+        // Redirect to the dashboard after 5 seconds
+        setTimeout(function () {
+            window.location.href = data.redirect_url;
+        }, 5000);
+    })
+    .catch(error => {
+        console.error('Error updating client:', error);
+        // Display error message on the page
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = 'Error updating client';
+        messageDiv.style.color = 'red'; // Style the message as error
+    });
+    });
+
+
     // Function to fetch client details by client_id
         function fetchClientDetails(clientId) {
             fetch(`{% url 'clients:get_client' client_id=0 %}`.replace('0', clientId))
@@ -188,6 +231,8 @@
                     form.querySelector('input[name="plan_end_date"]').value = data.data.plan_end_date;
                     form.querySelector('input[name="total_amount"]').value = data.data.total_amount;
                     form.querySelector('input[name="amount_paid"]').value = data.data.amount_paid;
+                    // Set the value of the hidden input field
+                    form.querySelector('#client-id').value = clientId;
 
                     // Show the update form and hide the client list form
                     document.getElementById('clients-heading').style.display = 'none';
