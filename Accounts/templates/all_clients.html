@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List All Clients</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+        #clients-form {
+            display: block;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #clients-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        #clients-list li {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        label:hover {
+            background-color: #eaeaea;
+        }
+        input[type="radio"] {
+            display: none;
+        }
+        input[type="radio"] + span {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        input[type="radio"] + span:before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #007bff;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+        input[type="radio"]:checked + span:before {
+            background-color: #007bff;
+        }
+        button[type="submit"] {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        /* Style for clients-update-form */
+        #clients-update-form {
+            display: none;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #update-heading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"] {
+            width: calc(100% - 12px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-group input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .form-group input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div id="clients-container">
+    <h1 id="clients-heading">List All Clients</h1>
+    <form id="clients-form">
+        <ul id="clients-list">
+            <!-- Client items will be dynamically added here -->
+        </ul>
+        <button type="submit">Select Client</button>
+    </form>
+    <form id="clients-update-form" method="post" action="/submit-form" style="display: none;">
+        <h1 id="update-heading" style="display: none;">Update Client Details</h1>
+        <!-- Form fields go here -->
+        <div class="form-group">
+            <label for="client-name">Client Name:</label>
+            <input type="text" name="client_name" placeholder="Client Name">
+        </div>
+        <div class="form-group">
+            <label for="client-number">Client Number:</label>
+            <input type="text" name="client_number" placeholder="Client Number">
+        </div>
+        <div class="form-group">
+            <label for="client-address">Client Address:</label>
+            <input type="text" name="client_address" placeholder="Client Address">
+        </div>
+        <div class="form-group">
+            <label for="active-plan">Active Plan:</label>
+            <input type="text" name="active_plan" placeholder="Active Plan">
+        </div>
+        <div class="form-group">
+            <label for="plan-start-date">Plan Start Date:</label>
+            <input type="date" name="plan_start_date">
+        </div>
+        <div class="form-group">
+            <label for="plan-end-date">Plan End Date:</label>
+            <input type="date" name="plan_end_date">
+        </div>
+        <div class="form-group">
+            <label for="total-amount">Total Amount:</label>
+            <input type="number" name="total_amount">
+        </div>
+        <div class="form-group">
+            <label for="amount-paid">Amount Paid:</label>
+            <input type="number" name="amount_paid">
+        </div>
+        <button type="submit">Update Client</button>
+    </form>
+</div>
+
+<script>
+    // Function to fetch client details by client_id
+        function fetchClientDetails(clientId) {
+            fetch(`{% url 'clients:get_client' client_id=0 %}`.replace('0', clientId))
+                .then(response => response.json())
+                .then(data => {
+                    // Populate form fields with client data
+                    const form = document.getElementById('clients-update-form');
+                    form.querySelector('input[name="client_name"]').value = data.data.client_name;
+                    form.querySelector('input[name="client_number"]').value = data.data.client_number;
+                    form.querySelector('input[name="client_address"]').value = data.data.client_address;
+                    form.querySelector('input[name="active_plan"]').value = data.data.active_plan;
+                    form.querySelector('input[name="plan_start_date"]').value = data.data.plan_start_date;
+                    form.querySelector('input[name="plan_end_date"]').value = data.data.plan_end_date;
+                    form.querySelector('input[name="total_amount"]').value = data.data.total_amount;
+                    form.querySelector('input[name="amount_paid"]').value = data.data.amount_paid;
+
+                    // Show the update form and hide the client list form
+                    document.getElementById('clients-heading').style.display = 'none';
+                    document.getElementById('clients-form').style.display = 'none';
+                    document.getElementById('update-heading').style.display = 'block';
+                    document.getElementById('clients-update-form').style.display = 'block';
+                    form.style.display = 'block';
+
+                })
+                .catch(error => {
+                    console.error('Error fetching client details:', error);
+                });
+        }
+
+
+    // Handle form submission
+    document.getElementById('clients-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const selectedClientId = document.querySelector('input[name="selected-client"]:checked').value;
+        if (selectedClientId) {
+            fetchClientDetails(selectedClientId);
+        } else {
+            console.error('No client selected.');
+        }
+    });
+
+   fetch('{% url 'clients:clients_list' %}')
+            .then(response => response.json())
+            .then(data => {
+                const clientsList = document.getElementById('clients-list');
+                data.forEach(client => {
+                    const clientItem = document.createElement('li');
+                    clientItem.className = 'client-item';
+                    clientItem.innerHTML = `
+                        <label>
+                            <input type="radio" name="selected-client" value="${client.client_id}">
+                            <span>${client.client_name} - ${client.client_number}</span>
+                        </label>
+                    `;
+                    clientsList.appendChild(clientItem);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching client data:', error);
+            });
+</script>
+</body>
+</html>

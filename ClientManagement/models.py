@@ -16,6 +16,7 @@ class Client(models.Model):
     amount_paid = models.IntegerField()
     is_active = models.BooleanField(default=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    #add email of client
 
 
 class Attendance(models.Model):

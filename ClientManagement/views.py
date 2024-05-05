@@ -9,6 +9,9 @@ from django.http import JsonResponse
 from rest_framework import status
 from django.utils import timezone
 
+from .serializers import ClientUpdateSerializer
+from ClientManagement.forms import ClientUpdateForm
+
 
 class ClientView(APIView):
     def post(self, request):
@@ -120,3 +123,27 @@ class DeleteClientsView(APIView):
         except Exception as e:
             return JsonResponse({'message': f'Failed to delete clients due to {str(e)}'},
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UpdateClientsView(APIView):
+    def get(self, request):
+        return render(request, 'all_clients.html')
+
+    def post(self, request):
+        client_id = int(request.data.get('client_id'))
+        client = models.Client.objects.get(client_id=client_id)
+        form = ClientUpdateForm(instance=client)  # Pre-fill the form with the client data
+        return render(request, 'update_client_form.html', {'form': form})
+
+
+class GetClientView(APIView):
+    def get(self, request, client_id):
+        try:
+            client = models.Client.objects.get(client_id=client_id)
+            serializer = ClientUpdateSerializer(client, many=False)
+            return JsonResponse({'message': 'Details of selected client', 'data': serializer.data},
+                                status=status.HTTP_200_OK, safe=False)
+        except models.Client.DoesNotExist:
+            return JsonResponse({'message': 'Client not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return JsonResponse({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
