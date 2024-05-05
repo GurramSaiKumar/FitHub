@@ -108,7 +108,7 @@ class ClientAttendanceView(APIView):
 class ClientsListView(APIView):
     def get(self, request):
         try:
-            clients = models.Client.objects.all()
+            clients = models.Client.objects.all().filter(is_active=True)
             serializer = serializers.ClientGetSerializer(clients, many=True)
             return JsonResponse(data=serializer.data, status=status.HTTP_200_OK, safe=False)
         except Exception as e:
@@ -151,7 +151,7 @@ class UpdateClientsView(APIView):
 class GetClientView(APIView):
     def get(self, request, client_id):
         try:
-            client = models.Client.objects.get(client_id=client_id)
+            client = models.Client.objects.get(client_id=client_id, is_active=False)
             serializer = ClientUpdateSerializer(client, many=False)
             return JsonResponse({'message': 'Details of selected client', 'data': serializer.data},
                                 status=status.HTTP_200_OK, safe=False)
