@@ -151,7 +151,7 @@ class UpdateClientsView(APIView):
 class GetClientView(APIView):
     def get(self, request, client_id):
         try:
-            client = models.Client.objects.get(client_id=client_id, is_active=False)
+            client = models.Client.objects.get(client_id=client_id, is_active=True)
             serializer = ClientUpdateSerializer(client, many=False)
             return JsonResponse({'message': 'Details of selected client', 'data': serializer.data},
                                 status=status.HTTP_200_OK, safe=False)
